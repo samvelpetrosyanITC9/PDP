@@ -1,0 +1,17 @@
+1. Divide and conquer algorithm: Solves a problem by dividing it into smaller subproblems,
+solving each subproblem independently, and then combining the
+Divide and conquer algorithm: O(nlogn) or O(n^2) depending on the problem.
+
+2. Dynamic programming algorithm: Solves a problem by breaking it down into smaller subproblems
+and solving each subproblem recursively.
+Dynamic programming algorithm: O(n^2) or O(n^3) depending on the problem.
+
+Optimal solution:
+Divide and conquer algorithm: May or may not provide the optimal solution.
+Dynamic programming algorithm: Guarantees the optimal solution.
+
+Examples:
+Divide and conquer algorithm: Merge sort, Quick sort, binary search, etc.
+Dynamic programming algorithm: Fibonacci series, Longest common subsequence, Knapsack problem, etc.
+
+In summary, the main differences among these algorithms are their approach, goal, time and space complexity, and their ability to provide the optimal solution. Divide and conquer algorithm are generally faster and simpler, but may not always provide the optimal solution, while dynamic programming algorithm guarantees the optimal solution but is slower and more complex.
