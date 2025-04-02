@@ -1,0 +1,35 @@
+1. Physical Layer
+Function: Defines the physical aspects of network communication such as cables, radio frequencies, or other physical means.
+Data Type: Bits (0s and 1s).
+Examples: Ethernet cables, fiber optics, wireless radio frequencies, hubs.
+
+2. Data Link Layer
+Function: Responsible for node-to-node data transfer, error detection, and correction over the physical link.
+Data Type: Frames.
+Sub-layers: Logical Link Control (LLC) and Media Access Control (MAC).
+Examples: Ethernet, Wi-Fi, MAC addresses, switches.
+
+3. Network Layer
+Function: Handles logical addressing and routing of data between different networks.
+Data Type: Packets.
+Examples: IP (Internet Protocol), routers, IPv4/IPv6, ICMP.
+
+4. Transport Layer
+Function: Ensures reliable transmission of data, error recovery, flow control, and segmentation.
+Data Type: Segments (TCP) or Datagrams (UDP).
+Protocols: TCP (Transmission Control Protocol), UDP (User Datagram Protocol).
+
+5. Session Layer
+Function: Manages sessions or connections between applications. It establishes, maintains, and terminates connections.
+Data Type: Data streams.
+Examples: NetBIOS, RPC (Remote Procedure Call).
+
+6. Presentation Layer
+Function: Ensures that data is in a usable format and is presented properly. It handles data encryption, compression, and translation.
+Data Type: Formatted data.
+Examples: JPEG, ASCII, SSL/TLS.
+
+7. Application Layer
+Function: Closest to the end-user, this layer provides network services directly to applications.
+Data Type: User data.
+Examples: HTTP, FTP, SMTP, DNS.
