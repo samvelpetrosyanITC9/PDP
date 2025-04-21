@@ -6,8 +6,8 @@ const DoctorClinicians = require("../pages/doctorClinicians");
 
 describe("Test search provider functionality", () => {
   it("Find provider ", async () => {
-    Page.open();
-    HomePage.findProviderService();
-    DoctorClinicians.findDoctorClinicians();
+    await Page.open();
+    await HomePage.findProviderService();
+    await DoctorClinicians.findDoctorClinicians();
   });
 });
