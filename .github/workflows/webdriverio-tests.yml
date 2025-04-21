@@ -1,0 +1,78 @@
+name: WebdriverIO E2E Tests
+
+on:
+  # Run on push to main branch
+  push:
+    branches: [ main ]
+  
+  # Run on pull requests to main branch
+  pull_request:
+    branches: [ main ]
+  
+  # Run every Monday at midnight UTC
+  schedule:
+    - cron: '0 0 * * 1'
+
+# Environment variables available to all jobs
+env:
+  NODE_ENV: 'test'
+  CI: true
+
+jobs:
+  test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+        browser: [chrome, firefox]  # Test on multiple browsers
+
+    steps:
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_ENV: development
+
+      # Setup browser drivers
+      - name: Setup Chrome
+        if: matrix.browser == 'chrome'
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: 'latest'
+
+      - name: Setup Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@latest
+        with:
+          firefox-version: 'latest'
+
+      # Run tests
+      - name: Run WebdriverIO tests
+        run: npm test
+        env:
+          BROWSER: ${{ matrix.browser }}
+          HEADLESS: true
+          CI: true
+
+      # Upload test results
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.browser }}-${{ matrix.node-version }}
+          path: |
+            ./test-results/
+            ./logs/ 
