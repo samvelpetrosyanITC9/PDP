@@ -1,26 +1,20 @@
-name: E2E-Tests
-on: [push, pull_request]
+name: Run WebdriverIO Tests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-        - name: ⬇️ Checkout Code
-          uses: actions/checkout@v4
-
-        - name: 🐢 Setup Node
-          uses: actions/setup-node@v4
-          with:
-            node-version-file: '.nvmrc'
-
-        - name: 🏗️ Install Dependencies
-          run: npm install
-
-        - name: 🧪 Test
-          run: npm run uiTests
-
-        - name: 📦 Upload Logs
-          uses: actions/upload-artifact@v4
-          if: failure()
-          with:
-            name: logs
-            path: logs
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+      - name: Run WebdriverIO tests
+        run: npm run uiTests
