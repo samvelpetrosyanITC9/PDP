@@ -47,14 +47,13 @@ exports.config = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://saucelabs.com/platform/platform-configurator
   //
-  capabilities: [
-    {
-      browserName: "chrome",
-      "goog:chromeOptions": {
-        args: ["--disable-gpu"],
-      },
-    },
-  ],
+  capabilities: [{
+    maxInstances: 1,
+    browserName: 'chrome',
+    'goog:chromeOptions': {
+      args: ['--headless', '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage']
+    }
+  }],
 
   //
   // ===================
