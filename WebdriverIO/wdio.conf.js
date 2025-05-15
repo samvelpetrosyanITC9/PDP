@@ -1,4 +1,4 @@
-exports.config = {
+export const config = {
   //
   // ====================
   // Runner Configuration
@@ -20,7 +20,7 @@ exports.config = {
   // The path of the spec files will be resolved relative from the directory of
   // of the config file unless it's absolute.
   //
-  specs: ["./test/**/*.feature"],
+  specs: ["./src/tests/**.js"],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -47,13 +47,20 @@ exports.config = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://saucelabs.com/platform/platform-configurator
   //
-  capabilities: [{
-    maxInstances: 1,
-    browserName: 'chrome',
-    'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage']
-    }
-  }],
+  capabilities: [
+    {
+      maxInstances: 1,
+      browserName: "chrome",
+      "goog:chromeOptions": {
+        args: [
+          // "--headless=new",
+          "--disable-gpu",
+          "--no-sandbox",
+          "--disable-dev-shm-usage",
+        ],
+      },
+    },
+  ],
 
   //
   // ===================
@@ -102,7 +109,21 @@ exports.config = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  // services: [],
+  services: [
+    [
+      "chromedriver",
+      {
+        chromedriverCustomPath: "./node_modules/.bin/chromedriver",
+      },
+    ],
+  ],
+  hostname: "localhost",
+  port: 9515,
+  path: "/",
+  // Disable automatic ChromeDriver download
+  autoCompileOpts: {
+    autoCompile: false,
+  },
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -135,7 +156,7 @@ exports.config = {
   // If you are using Cucumber you need to specify the location of your step definitions.
   cucumberOpts: {
     // <string[]> (file/dir) require files before executing features
-    require: ["./test/specs/*.js"],
+    require: ["./src/tests/**.js"],
     // <boolean> show full backtrace for errors
     backtrace: false,
     // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)

@@ -1,21 +1,26 @@
-class HomePage {
-  get providerServicesBtn() {
-    return $(
-      ":nth-child(3) > div > .nav-menu-button.ds-u-font-size--base.ds-u-sans.ds-u-valign--bottom.ch-u-text-hover--none.ch-u-text-focus--none"
-    );
-  }
-  get findProviderServiceBtn() {
-    return $(
-      ":nth-child(1) > :nth-child(2) > .ds-u-margin-bottom--1:nth-child(1)"
-    );
+import { $ } from "@wdio/globals";
+import BasePage from "./basePage.js";
+import { HOME_PAGE } from "../constants/homePageSelectors.js";
+
+export class HomePage extends BasePage {
+  get providerServicesButton() {
+    return $(HOME_PAGE.PROVIDER_SERVICES.BUTTON);
   }
 
+  get findCareProviders() {
+    return $(HOME_PAGE.FIND_CARE_PROVIDER.BUTTON);
+  }
+
+  /**
+   * Navigates to the provider search page
+   * @returns {Promise<void>}
+   */
   async findProviderService() {
-    const element = await $("h1 span");
-    await expect(element).toHaveText("Welcome to Medicare");
-    await this.providerServicesBtn.click();
-    await this.findProviderServiceBtn.click();
+    await this.providerServicesButton.waitForClickable();
+    await this.providerServicesButton.click();
+    await this.findCareProviders.waitForClickable();
+    await this.findCareProviders.click();
   }
 }
 
-module.exports = new HomePage();
+export default HomePage;

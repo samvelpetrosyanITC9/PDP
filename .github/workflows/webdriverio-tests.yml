@@ -1,6 +1,8 @@
-name: Run WebdriverIO Tests
+name: WebdriverIO Tests
 
 on:
+  schedule:
+    - cron: '0 0 * * 1'
   push:
     branches: [ main ]
   pull_request:
@@ -10,26 +12,66 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [18.x]
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: WebdriverIO/package-lock.json
 
-      - name: Install Google Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget gnupg
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
 
-      - name: Install dependencies
-        run: npm install
+    - name: Get Chrome version
+      id: chrome-version
+      run: |
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
+        echo "CHROME_VERSION=$CHROME_VERSION" >> $GITHUB_ENV
 
-      - name: Run WebdriverIO tests
-        run: npm run uiTests
+    - name: Install ChromeDriver
+      run: |
+        cd WebdriverIO
+        npm install chromedriver@${{ env.CHROME_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd WebdriverIO
+        npm ci
+
+    - name: Run WebdriverIO tests
+      run: |
+        cd WebdriverIO
+        npm run wdio
+
+    - name: Generate Allure Report
+      if: always()
+      run: |
+        cd WebdriverIO
+        npx allure generate allure-results --clean
+
+    - name: Upload Allure Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-report
+        path: WebdriverIO/allure-report
+        retention-days: 30
+
+    - name: Check test status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "All tests passed successfully!"
+        else
+          echo "Some tests failed. Check the Allure report for details."
+          exit 1
+        fi 

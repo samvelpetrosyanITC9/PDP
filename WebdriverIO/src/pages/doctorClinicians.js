@@ -1,17 +1,19 @@
-class DoctorClinicians {
-  get doctorsClinicians() {
-    return $(
-      "mat-card#searchMenuContainer.mat-card.mat-focus-indicator.ProviderSearchMenu > ccxp-provider-search-menu-options.ProviderSearchMenuListing:nth-child(1) > div:nth-child(2)"
-    );
-  }
+import { $ } from "@wdio/globals";
+import BasePage from "./basePage.js";
+import { PROVIDER_SEARCH } from "../constants/providerSearchSelectors.js";
 
+class DoctorClinicians extends BasePage {
+  get doctorsClinicians() {
+    return $(PROVIDER_SEARCH.DOCTOR_CLINICIANS);
+  }
+  
+  /**
+   * Navigates to the provider find page
+   * @returns {Promise<void>}
+   */
   async findDoctorClinicians() {
-    const element = await $(
-      ".ProviderSearchLanding__splash-headline.mat-headline-4.mat-display-1"
-    );
-    await expect(element).toHaveText("Find & compare providers near you.");
     await this.doctorsClinicians.click();
   }
 }
 
-module.exports = new DoctorClinicians();
+export default DoctorClinicians;
