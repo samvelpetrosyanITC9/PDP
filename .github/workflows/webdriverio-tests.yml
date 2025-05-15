@@ -40,11 +40,27 @@ jobs:
         echo "CHROME_VERSION=$CHROME_VERSION" >> $GITHUB_ENV
         echo "Chrome version: $CHROME_VERSION"
 
+    - name: Setup WebdriverIO directory
+      run: |
+        cd WebdriverIO
+        npm cache clean --force
+        rm -rf node_modules package-lock.json
+
     - name: Install dependencies
       run: |
         cd WebdriverIO
-        npm ci
-        npm install chromedriver@${{ env.CHROME_VERSION }}
+        npm install
+        npm install chromedriver@${{ env.CHROME_VERSION }} --save-dev
+      env:
+        NODE_ENV: development
+
+    - name: Verify installations
+      run: |
+        cd WebdriverIO
+        node --version
+        npm --version
+        npx chromedriver --version
+        google-chrome --version
 
     - name: Run WebdriverIO tests
       run: |
