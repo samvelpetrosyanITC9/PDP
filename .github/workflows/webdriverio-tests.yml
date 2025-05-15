@@ -40,61 +40,19 @@ jobs:
         echo "CHROME_VERSION=$CHROME_VERSION" >> $GITHUB_ENV
         echo "Chrome version: $CHROME_VERSION"
 
-    - name: Setup WebdriverIO directory
-      run: |
-        cd WebdriverIO
-        npm cache clean --force
-        rm -rf node_modules package-lock.json logs allure-results allure-report mochawesome-report
-
     - name: Install dependencies
       run: |
         cd WebdriverIO
-        npm install
-        npm install chromedriver@${{ env.CHROME_VERSION }} --save-dev
-        npm install @babel/core @babel/register --save-dev
-      env:
-        NODE_ENV: development
-
-    - name: Verify installations
-      run: |
-        cd WebdriverIO
-        echo "Node version: $(node --version)"
-        echo "NPM version: $(npm --version)"
-        echo "ChromeDriver version: $(npx chromedriver --version)"
-        echo "Chrome version: $(google-chrome --version)"
-        echo "Current directory: $(pwd)"
-        echo "Directory contents: $(ls -la)"
-        echo "Package.json contents: $(cat package.json)"
-
-    - name: Create logs directory
-      run: |
-        cd WebdriverIO
-        mkdir -p logs
+        npm ci
+        npm install chromedriver@${{ env.CHROME_VERSION }}
 
     - name: Run WebdriverIO tests
       run: |
         cd WebdriverIO
-        DEBUG=* npm run test:debug
+        npm run wdio
       env:
         CI: true
         NODE_ENV: test
-        DEBUG: "*"
-        WDIO_LOG_LEVEL: "debug"
-        WDIO_TIMEOUT: "30000"
-        WDIO_RETRIES: "1"
-        CHROME_BIN: "/usr/bin/google-chrome"
-        CHROMEDRIVER_PATH: "./node_modules/.bin/chromedriver"
-
-    - name: Upload test logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-logs
-        path: |
-          WebdriverIO/logs/
-          WebdriverIO/allure-results/
-          WebdriverIO/mochawesome-report/
-        retention-days: 30
 
     - name: Generate Allure Report
       if: always()
@@ -109,19 +67,4 @@ jobs:
       with:
         name: allure-report
         path: WebdriverIO/allure-report/
-        retention-days: 30
-
-    - name: Generate Mochawesome Report
-      if: always()
-      run: |
-        cd WebdriverIO
-        npx mochawesome-merge mochawesome-report/*.json > mochawesome-report/merged-report.json
-        npx mochawesome-report-generator mochawesome-report/merged-report.json
-
-    - name: Upload Mochawesome Report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: mochawesome-report
-        path: WebdriverIO/mochawesome-report/
         retention-days: 30

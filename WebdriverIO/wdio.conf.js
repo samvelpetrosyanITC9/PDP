@@ -58,23 +58,7 @@ export const config = {
           "--disable-extensions",
           "--disable-setuid-sandbox",
           "--window-size=1920,1080",
-          "--disable-web-security",
-          "--allow-running-insecure-content",
-          "--disable-notifications",
-          "--disable-popup-blocking",
-          "--disable-infobars",
-          "--disable-save-password-bubble",
-          "--disable-translate",
-          "--disable-features=site-per-process",
-          "--disable-features=IsolateOrigins,site-per-process",
-          "--disable-site-isolation-trials",
         ],
-        prefs: {
-          "profile.default_content_setting_values.notifications": 2,
-          "profile.default_content_settings.popups": 0,
-          "profile.managed_default_content_settings.images": 1,
-          "profile.default_content_setting_values.cookies": 1,
-        },
       },
     },
   ],
@@ -86,7 +70,7 @@ export const config = {
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: "debug",
+  logLevel: "info",
   //
   // Set specific log levels per logger
   // loggers:
@@ -113,7 +97,7 @@ export const config = {
   baseUrl: "https://www.medicare.gov",
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 30000,
+  waitforTimeout: 10000,
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response
@@ -133,7 +117,7 @@ export const config = {
         chromedriverCustomPath: "./node_modules/.bin/chromedriver",
         logFileName: "wdio-chromedriver.log",
         outputDir: "logs",
-        args: ["--silent", "--verbose", "--log-path=logs/chromedriver.log"],
+        args: ["--silent"],
       },
     ],
   ],
@@ -157,8 +141,6 @@ export const config = {
     ui: "bdd",
     timeout: 60000,
     retries: 1,
-    require: ["@babel/register"],
-    compilers: ["js:@babel/register"],
   },
 
   //
@@ -183,26 +165,6 @@ export const config = {
         disableWebdriverStepsReporting: true,
         disableWebdriverScreenshotsReporting: false,
         addConsoleLogs: true,
-        addAttachments: true,
-        addVideos: true,
-        addBrowserLogs: true,
-      },
-    ],
-    [
-      "mochawesome",
-      {
-        outputDir: "mochawesome-report",
-        outputFileFormat: function (opts) {
-          return `results-${opts.cid}.json`;
-        },
-        includeScreenshots: true,
-        screenshotUseRelativePath: true,
-        reportFilename: "report",
-        reportTitle: "Medicare.gov Test Report",
-        reportPageTitle: "Medicare.gov Test Report",
-        timestamp: true,
-        quiet: false,
-        debug: true,
       },
     ],
   ],
@@ -282,13 +244,6 @@ export const config = {
   beforeSession: async function () {
     // Set viewport size
     await browser.setWindowSize(1920, 1080);
-
-    // Set default timeouts
-    browser.setTimeout({
-      pageLoad: 30000,
-      script: 30000,
-      implicit: 10000,
-    });
   },
   /**
    * Gets executed before test execution begins. At this point you can access to all global
@@ -298,33 +253,10 @@ export const config = {
    * @param {object}         browser      instance of created browser/device session
    */
   before: async function () {
-    // Add custom commands
+    // Add custom commands or setup
     browser.addCommand("waitAndClick", async function (selector) {
       await $(selector).waitForClickable();
       await $(selector).click();
-    });
-
-    browser.addCommand(
-      "waitForElement",
-      async function (selector, timeout = 10000) {
-        const element = await $(selector);
-        await element.waitForDisplayed({ timeout });
-        await element.waitForClickable({ timeout });
-        return element;
-      }
-    );
-
-    browser.addCommand("waitForUrl", async function (url, timeout = 10000) {
-      await browser.waitUntil(
-        async () => {
-          const currentUrl = await browser.getUrl();
-          return currentUrl.includes(url);
-        },
-        {
-          timeout,
-          timeoutMsg: `URL did not contain ${url} after ${timeout}ms`,
-        }
-      );
     });
   },
   /**
@@ -455,24 +387,7 @@ export const config = {
     { error, result, duration, passed, retries }
   ) {
     if (error) {
-      // Take screenshot on failure
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      await browser.saveScreenshot(`./logs/error-${timestamp}.png`);
-
-      // Add error to Allure report
-      await allure.addAttachment(
-        "Error Screenshot",
-        await browser.takeScreenshot(),
-        "image/png"
-      );
-
-      // Add browser logs to Allure report
-      const logs = await browser.getLogs("browser");
-      await allure.addAttachment(
-        "Browser Logs",
-        JSON.stringify(logs, null, 2),
-        "application/json"
-      );
+      await browser.takeScreenshot();
     }
   },
 };

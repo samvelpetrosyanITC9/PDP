@@ -32,12 +32,12 @@ describe("Medicare Provider Search Tests", () => {
       await expect(searchHeadline).toHaveText(
         "Find & compare providers near you."
       );
-      const element = await $(
-        ".ProviderSearchLanding__splash-headline.mat-headline-4.mat-display-1"
-      );
+      const element = await $(PROVIDER_SEARCH.FINF_COMPARE_MESSAGE);
+      await expect(element).toBeDisplayed();
       await expect(element).toHaveText("Find & compare providers near you.");
       await doctorClinicians.findDoctorClinicians();
       const findDoctorsMessage = await $(PROVIDER_SEARCH.FIND_DOCTORS_MESSAGE);
+      await expect(findDoctorsMessage).toBeDisplayed();
       await expect(findDoctorsMessage).toHaveText(
         "Find doctors & clinicians near me"
       );
