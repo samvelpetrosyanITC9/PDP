@@ -1,6 +1,15 @@
 {
   "name": "WebdriverIO",
   "type": "module",
+  "version": "1.0.0",
+  "description": "WebdriverIO tests for Medicare.gov",
+  "scripts": {
+    "wdio": "wdio run ./wdio.conf.js",
+    "test": "npm run wdio",
+    "test:debug": "DEBUG=* npm run wdio -- --logLevel=debug",
+    "test:report": "allure generate allure-results --clean && allure open",
+    "clean": "rm -rf node_modules package-lock.json logs allure-results allure-report"
+  },
   "devDependencies": {
     "@wdio/allure-reporter": "^9.13.0",
     "@wdio/cli": "^9.13.0",
@@ -9,9 +18,14 @@
     "@wdio/spec-reporter": "^9.13.0",
     "allure-commandline": "^2.34.0",
     "chromedriver": "^136.0.0",
-    "wdio-chromedriver-service": "^8.1.1"
+    "wdio-chromedriver-service": "^8.1.1",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "mochawesome": "^7.1.3",
+    "mochawesome-report-generator": "^6.2.0"
   },
-  "scripts": {
-    "wdio": "wdio run ./wdio.conf.js"
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

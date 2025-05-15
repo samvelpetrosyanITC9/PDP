@@ -22,9 +22,7 @@ export const config = {
   //
   specs: ["./src/tests/**.js"],
   // Patterns to exclude.
-  exclude: [
-    // 'path/to/excluded/files'
-  ],
+  exclude: [],
   //
   // ============
   // Capabilities
@@ -41,7 +39,7 @@ export const config = {
   // and 30 processes will get spawned. The property handles how many capabilities
   // from the same test should run tests.
   //
-  maxInstances: 2,
+  maxInstances: 1,
   //
   // If you have trouble getting all important capabilities together, check out the
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
@@ -53,11 +51,30 @@ export const config = {
       browserName: "chrome",
       "goog:chromeOptions": {
         args: [
-          // "--headless=new",
+          "--headless=new",
           "--disable-gpu",
           "--no-sandbox",
           "--disable-dev-shm-usage",
+          "--disable-extensions",
+          "--disable-setuid-sandbox",
+          "--window-size=1920,1080",
+          "--disable-web-security",
+          "--allow-running-insecure-content",
+          "--disable-notifications",
+          "--disable-popup-blocking",
+          "--disable-infobars",
+          "--disable-save-password-bubble",
+          "--disable-translate",
+          "--disable-features=site-per-process",
+          "--disable-features=IsolateOrigins,site-per-process",
+          "--disable-site-isolation-trials",
         ],
+        prefs: {
+          "profile.default_content_setting_values.notifications": 2,
+          "profile.default_content_settings.popups": 0,
+          "profile.managed_default_content_settings.images": 1,
+          "profile.default_content_setting_values.cookies": 1,
+        },
       },
     },
   ],
@@ -69,7 +86,7 @@ export const config = {
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: "info",
+  logLevel: "debug",
   //
   // Set specific log levels per logger
   // loggers:
@@ -93,10 +110,10 @@ export const config = {
   // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
   // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
   // gets prepended directly.
-  // baseUrl: 'http://localhost:8080',
+  baseUrl: "https://www.medicare.gov",
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 10000,
+  waitforTimeout: 30000,
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response
@@ -114,6 +131,9 @@ export const config = {
       "chromedriver",
       {
         chromedriverCustomPath: "./node_modules/.bin/chromedriver",
+        logFileName: "wdio-chromedriver.log",
+        outputDir: "logs",
+        args: ["--silent", "--verbose", "--log-path=logs/chromedriver.log"],
       },
     ],
   ],
@@ -132,10 +152,13 @@ export const config = {
   // Make sure you have the wdio adapter package for the specific framework installed
   // before running any tests.
 
-  // framework: "mocha", // Ensure Mocha is set
+  framework: "mocha",
   mochaOpts: {
-    ui: "bdd", // Enables `describe` and `it`
+    ui: "bdd",
     timeout: 60000,
+    retries: 1,
+    require: ["@babel/register"],
+    compilers: ["js:@babel/register"],
   },
 
   //
@@ -151,7 +174,38 @@ export const config = {
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
   // see also: https://webdriver.io/docs/dot-reporter
-  reporters: ["spec", ["allure", { outputDir: "allure-results" }]],
+  reporters: [
+    "spec",
+    [
+      "allure",
+      {
+        outputDir: "allure-results",
+        disableWebdriverStepsReporting: true,
+        disableWebdriverScreenshotsReporting: false,
+        addConsoleLogs: true,
+        addAttachments: true,
+        addVideos: true,
+        addBrowserLogs: true,
+      },
+    ],
+    [
+      "mochawesome",
+      {
+        outputDir: "mochawesome-report",
+        outputFileFormat: function (opts) {
+          return `results-${opts.cid}.json`;
+        },
+        includeScreenshots: true,
+        screenshotUseRelativePath: true,
+        reportFilename: "report",
+        reportTitle: "Medicare.gov Test Report",
+        reportPageTitle: "Medicare.gov Test Report",
+        timestamp: true,
+        quiet: false,
+        debug: true,
+      },
+    ],
+  ],
 
   // If you are using Cucumber you need to specify the location of your step definitions.
   cucumberOpts: {
@@ -225,8 +279,17 @@ export const config = {
    * @param {Array.<String>} specs List of spec file paths that are to be run
    * @param {string} cid worker id (e.g. 0-0)
    */
-  // beforeSession: function (config, capabilities, specs, cid) {
-  // },
+  beforeSession: async function () {
+    // Set viewport size
+    await browser.setWindowSize(1920, 1080);
+
+    // Set default timeouts
+    browser.setTimeout({
+      pageLoad: 30000,
+      script: 30000,
+      implicit: 10000,
+    });
+  },
   /**
    * Gets executed before test execution begins. At this point you can access to all global
    * variables like `browser`. It is the perfect place to define custom commands.
@@ -234,8 +297,36 @@ export const config = {
    * @param {Array.<String>} specs        List of spec file paths that are to be run
    * @param {object}         browser      instance of created browser/device session
    */
-  // before: function (capabilities, specs) {
-  // },
+  before: async function () {
+    // Add custom commands
+    browser.addCommand("waitAndClick", async function (selector) {
+      await $(selector).waitForClickable();
+      await $(selector).click();
+    });
+
+    browser.addCommand(
+      "waitForElement",
+      async function (selector, timeout = 10000) {
+        const element = await $(selector);
+        await element.waitForDisplayed({ timeout });
+        await element.waitForClickable({ timeout });
+        return element;
+      }
+    );
+
+    browser.addCommand("waitForUrl", async function (url, timeout = 10000) {
+      await browser.waitUntil(
+        async () => {
+          const currentUrl = await browser.getUrl();
+          return currentUrl.includes(url);
+        },
+        {
+          timeout,
+          timeoutMsg: `URL did not contain ${url} after ${timeout}ms`,
+        }
+      );
+    });
+  },
   /**
    * Runs before a WebdriverIO command gets executed.
    * @param {string} commandName hook command name
@@ -357,5 +448,31 @@ export const config = {
    * @param {object} params information about the assertion that was executed, including its results
    */
   // afterAssertion: function(params) {
-  // }
+  // },
+  afterTest: async function (
+    test,
+    context,
+    { error, result, duration, passed, retries }
+  ) {
+    if (error) {
+      // Take screenshot on failure
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      await browser.saveScreenshot(`./logs/error-${timestamp}.png`);
+
+      // Add error to Allure report
+      await allure.addAttachment(
+        "Error Screenshot",
+        await browser.takeScreenshot(),
+        "image/png"
+      );
+
+      // Add browser logs to Allure report
+      const logs = await browser.getLogs("browser");
+      await allure.addAttachment(
+        "Browser Logs",
+        JSON.stringify(logs, null, 2),
+        "application/json"
+      );
+    }
+  },
 };
